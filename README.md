@@ -210,4 +210,4 @@ A senha padrão `1234` serve apenas para primeiro acesso em ambiente de teste. N
 
 ## Licença
 
-Distribuído sob a licença MIT. Consulte [LICENSE.md](LICENSE.md).
+O uso do projeto é regido pela licença de uso restrito em [LICENSE.md](LICENSE.md).
