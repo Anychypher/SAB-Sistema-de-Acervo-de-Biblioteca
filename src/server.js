@@ -2,6 +2,8 @@ const express = require('express');
 const helmet = require('helmet');
 const crypto = require('crypto');
 const path = require('path');
+const os = require('os');
+const fs = require('fs/promises');
 const XLSX = require('xlsx');
 const db = require('./db');
 const app = express();
@@ -54,6 +56,22 @@ app.put('/api/admin/operator-password', (req, res) => {
     if (password.length < 8 || password.length > 200) return fail(res, 'A senha deve ter entre 8 e 200 caracteres.');
     db.prepare("UPDATE settings SET value=? WHERE key='operator_password_hash'").run(hashPassword(password));
     res.json({ ok: true });
+});
+app.get('/api/admin/backup', async (req, res) => {
+    if (req.role !== 'admin') return fail(res, 'Apenas a conta de administração pode baixar o backup.', 403);
+    const temporaryFile = path.join(os.tmpdir(), `sab-backup-${crypto.randomBytes(12).toString('hex')}.sqlite`);
+    const date = new Date().toISOString().slice(0, 10);
+    try {
+        await db.backup(temporaryFile);
+        res.setHeader('Cache-Control', 'no-store');
+        res.download(temporaryFile, `sab-backup-${date}.sqlite`, (error) => {
+            fs.unlink(temporaryFile).catch(() => {});
+            if (error && !res.headersSent) fail(res, 'Não foi possível enviar o backup.', 500);
+        });
+    } catch (error) {
+        await fs.unlink(temporaryFile).catch(() => {});
+        fail(res, 'Não foi possível criar o backup.', 500);
+    }
 });
 
 // Acervo

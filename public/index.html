@@ -16,7 +16,7 @@
             <h1>Sistema de Acervo de Biblioteca</h1>
             <p>Colégio Estadual Humberto de A. Castelo Branco EFMT</p><label>Senha do operador<input id="password"
                     type="password" autocomplete="current-password" required autofocus></label><button
-                class="btn primary full">Entrar</button><small>Configure ADMIN_RECOVERY_PASSWORD no servidor para habilitar o acesso de administraÃ§Ã£o e recuperaÃ§Ã£o.</small>
+                class="btn primary full">Entrar</button>
             <p id="login-error" class="error"></p>
         </form>
     </div>
@@ -158,6 +158,12 @@
                         <button class="btn primary">Salvar nova senha</button>
                         <p id="admin-message" class="muted" role="status"></p>
                     </form>
+                </div>
+                <div class="panel admin-panel backup-panel">
+                    <h2>Backup do sistema</h2>
+                    <p class="muted">Baixe uma cópia do banco de dados com livros, alunos, empréstimos e configurações.</p>
+                    <button class="btn" id="download-backup" type="button">Baixar backup</button>
+                    <p id="backup-message" class="muted" role="status"></p>
                 </div>
             </section>
         </main>

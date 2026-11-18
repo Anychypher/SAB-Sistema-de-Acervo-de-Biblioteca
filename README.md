@@ -96,6 +96,8 @@ ADMIN_RECOVERY_PASSWORD='crie-aqui-uma-senha-secreta-forte' npm start
 
 A senha definida pelo operador é armazenada no banco local como hash e continua válida após reiniciar o servidor. `OPERATOR_PASSWORD` serve apenas para inicializar a senha quando o banco ainda não tem uma senha gravada. Mantenha `ADMIN_RECOVERY_PASSWORD` privada e configurada sempre que iniciar o servidor; sem ela, o acesso de recuperação fica desativado.
 
+Na mesma área de Administração, use **Baixar backup** para baixar uma cópia consistente do banco SQLite. Guarde o arquivo em um local seguro e separado do computador do servidor. Para restaurar, pare o servidor normalmente, preserve o banco atual e eventuais arquivos `sab.sqlite-wal` e `sab.sqlite-shm`, e então copie o backup para `data/sab.sqlite`.
+
 ## Importação de dados
 
 Na tela **Acervo** ou **Cadastro de aluno**, use o botão de importação. O sistema lê a primeira aba da planilha. O importador de XLSX utiliza SheetJS carregado pelo navegador via CDN; portanto, para esse formato, é necessária conexão com a internet na tela de importação. CSV é processado localmente.

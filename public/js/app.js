@@ -204,6 +204,30 @@ $('#operator-password-form').addEventListener('submit', async (event) => {
     }
 });
 
+$('#download-backup').addEventListener('click', async () => {
+    const message = $('#backup-message');
+    message.textContent = 'Preparando backup...';
+    try {
+        const response = await fetch('/api/admin/backup', {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!response.ok) {
+            const data = await response.json().catch(() => ({}));
+            throw Error(data.error || 'Não foi possível baixar o backup.');
+        }
+        const file = await response.blob();
+        const url = URL.createObjectURL(file);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `sab-backup-${new Date().toISOString().slice(0, 10)}.sqlite`;
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        message.textContent = 'Backup baixado. Guarde o arquivo em local seguro, separado deste computador.';
+    } catch (error) {
+        message.textContent = error.message;
+    }
+});
+
 // Eventos dos botões de navegação
 document.querySelectorAll('[data-page]').forEach((button) => {
     button.onclick = () => navigate(button.dataset.page);
