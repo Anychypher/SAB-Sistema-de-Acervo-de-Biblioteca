@@ -48,6 +48,24 @@ O projeto foi implementado com a stack solicitada: HTML5, CSS3 e JavaScript puro
 
 ## Instalação e execução
 
+Também há scripts prontos na pasta `instalacao`. Eles instalam as dependências do projeto com `npm install`, pedem a senha secreta de recuperação do administrador e, ao executar, iniciam o servidor com `npm start` e abrem o endereço no navegador padrão. É necessário ter Node.js 20+ e npm instalados; o npm instala os pacotes dentro da pasta do projeto.
+
+Windows (PowerShell):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\instalacao\instalar-windows.ps1
+powershell -ExecutionPolicy Bypass -File .\instalacao\executar-windows.ps1
+```
+
+Linux:
+
+```bash
+bash instalacao/instalar-linux.sh
+bash instalacao/executar-linux.sh
+```
+
+O instalador salva `ADMIN_RECOVERY_PASSWORD` no arquivo local `.env`, ignorado pelo Git, e cria um atalho para execução na área de trabalho. Guarde essa senha; ela dá acesso à área de Administração. O script de execução pode ser chamado novamente e abre o servidor existente, se ele já estiver rodando.
+
 ```bash
 # 1. Entre na pasta do projeto
 cd sab-biblioteca
@@ -66,7 +84,7 @@ $env:OPERATOR_PASSWORD='uma-senha-forte'; npm start
 A aplicação ficará disponível em:
 
 ```text
-http://localhost:3000
+http://localhost:8001
 ```
 
 Sem definir `OPERATOR_PASSWORD`, a senha inicial é **1234**. Altere-a antes de utilizar o sistema com dados reais.

@@ -3,11 +3,25 @@ const helmet = require('helmet');
 const crypto = require('crypto');
 const path = require('path');
 const os = require('os');
+const fsSync = require('fs');
 const fs = require('fs/promises');
 const XLSX = require('xlsx');
 const db = require('./db');
+const envFile = path.join(__dirname, '..', '.env');
+if (fsSync.existsSync(envFile)) {
+    for (const line of fsSync.readFileSync(envFile, 'utf8').split(/\r?\n/)) {
+        const entry = line.trimStart();
+        if (!entry || entry.startsWith('#')) continue;
+        const separator = entry.indexOf('=');
+        if (separator < 1) continue;
+        const key = entry.slice(0, separator).trim();
+        if (/^[A-Za-z_][A-Za-z0-9_]*$/.test(key) && process.env[key] === undefined) {
+            process.env[key] = entry.slice(separator + 1);
+        }
+    }
+}
 const app = express();
-const PORT = Number(process.env.PORT || 3000);
+const PORT = Number(process.env.PORT || 8001);
 const ADMIN_RECOVERY_PASSWORD = process.env.ADMIN_RECOVERY_PASSWORD || '';
 const hashPassword = (password, salt = crypto.randomBytes(16).toString('hex')) => `${salt}:${crypto.scryptSync(password, salt, 64).toString('hex')}`;
 const passwordMatches = (password, storedHash) => {
