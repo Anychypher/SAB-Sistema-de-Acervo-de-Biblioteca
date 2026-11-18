@@ -66,6 +66,16 @@ bash instalacao/executar-linux.sh
 
 O instalador salva `ADMIN_RECOVERY_PASSWORD` no arquivo local `.env`, ignorado pelo Git, e cria um atalho para execução na área de trabalho. Guarde essa senha; ela dá acesso à área de Administração. O script de execução pode ser chamado novamente e abre o servidor existente, se ele já estiver rodando.
 
+Para desinstalar e apagar completamente a pasta do projeto, inclusive banco de dados, backups guardados nela, `.env`, dependências e histórico Git, execute o desinstalador correspondente. Ele avisa sobre a perda dos dados e exige digitar `APAGAR SAB`; salve antes o backup fora da pasta do projeto e pare o servidor.
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\instalacao\desinstalar-windows.ps1
+```
+
+```bash
+bash instalacao/desinstalar-linux.sh
+```
+
 ```bash
 # 1. Entre na pasta do projeto
 cd sab-biblioteca
