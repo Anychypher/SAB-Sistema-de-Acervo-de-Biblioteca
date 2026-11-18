@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="theme-color" content="#008a3b">
+    <title>SAB — Sistema de Acervo de Biblioteca</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+
+<body>
+    <div id="login" class="login-screen">
+        <form id="login-form" class="login-card">
+            <div class="brand-mark">SAB</div>
+            <h1>Sistema de Acervo de Biblioteca</h1>
+            <p>Colégio Estadual Humberto de A. Castelo Branco EFMT</p><label>Senha do operador<input id="password"
+                    type="password" autocomplete="current-password" required autofocus></label><button
+                class="btn primary full">Entrar</button><small>Senha inicial: 1234 (altere com
+                OPERATOR_PASSWORD)</small>
+            <p id="login-error" class="error"></p>
+        </form>
+    </div>
+    <div id="app" class="app hidden">
+        <header class="topbar">
+            <div class="school">
+                <div class="school-name">Colégio Estadual Humberto de A. Castelo Branco EFMT</div>
+                <div class="system-name">SAB — SISTEMA DE ACERVO DE BIBLIOTECA</div>
+            </div>
+            <div class="seal" aria-label="Logomarca SAB">SAB<span>📚</span></div>
+        </header>
+        <nav class="nav"><button data-page="home" class="active">Início</button><button
+                data-page="books">Acervo</button><button data-page="students">Cadastro de aluno</button><button
+                data-page="loans">Empréstimos</button><button data-page="reports">Relatório de devedores</button><button
+                id="logout" class="logout">Sair</button></nav>
+        <main id="main" class="main">
+            <section id="page-home" class="page active">
+                <div class="welcome">
+                    <div class="welcome-logo">📚</div>
+                    <p>Conhecer é poder</p>
+                    <h1>Bem-vindo ao SAB</h1><span>Gerencie o acervo, os alunos e a circulação de livros da
+                        biblioteca.</span>
+                </div>
+                <div id="stats" class="stats"></div>
+                <div class="quick-actions"><button class="btn primary" data-go="books">Consultar acervo</button><button
+                        class="btn" data-go="students">Cadastrar aluno</button><button class="btn" data-go="loans">Novo
+                        empréstimo</button></div>
+            </section>
+            <section id="page-books" class="page">
+                <div class="page-heading">
+                    <div>
+                        <p class="eyebrow">GESTÃO DA BIBLIOTECA</p>
+                        <h1>Acervo</h1>
+                        <p>Cadastre, consulte, edite e exclua títulos.</p>
+                    </div><button class="btn primary" id="new-book">＋ Inserir título</button>
+                </div>
+                <div class="toolbar"><input id="book-search"
+                        placeholder="Buscar por código, autor, título ou categoria"><button class="btn"
+                        id="book-search-btn">Pesquisar</button><label class="btn file-btn">Importar XLSX/CSV<input
+                            id="book-import" type="file" accept=".xlsx,.xls,.csv"></label></div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Título</th>
+                                <th>Autor</th>
+                                <th>Seção</th>
+                                <th>Categoria</th>
+                                <th>Editora/edição</th>
+                                <th>Existentes</th>
+                                <th>Disponíveis</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="books-body"></tbody>
+                    </table>
+                </div>
+            </section>
+            <section id="page-students" class="page">
+                <div class="page-heading">
+                    <div>
+                        <p class="eyebrow">GESTÃO DE USUÁRIOS</p>
+                        <h1>Cadastro de aluno</h1>
+                        <p>Consulte a matrícula ou o nome, ou cadastre um novo aluno.</p>
+                    </div><button class="btn primary" id="new-student">＋ Inserir aluno</button>
+                </div>
+                <div class="toolbar"><input id="student-search" placeholder="Pesquisar por matrícula ou nome"><button
+                        class="btn" id="student-search-btn">Pesquisar</button><label class="btn file-btn">Importar
+                        XLSX/CSV<input id="student-import" type="file" accept=".xlsx,.xls,.csv"></label></div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Matrícula</th>
+                                <th>Nome</th>
+                                <th>Nascimento</th>
+                                <th>Turma</th>
+                                <th>Município</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="students-body"></tbody>
+                    </table>
+                </div>
+            </section>
+            <section id="page-loans" class="page">
+                <div class="page-heading">
+                    <div>
+                        <p class="eyebrow">CIRCULAÇÃO DE EXEMPLARES</p>
+                        <h1>Empréstimos</h1>
+                        <p>Um empréstimo ativo por aluno, com prazo de sete dias.</p>
+                    </div>
+                </div>
+                <div class="panel loan-panel">
+                    <h2>Novo empréstimo</h2>
+                    <form id="loan-form" class="inline-form"><label>Aluno<select id="loan-student" required>
+                                <option value="">Selecione o aluno</option>
+                            </select></label><label>Livro<select id="loan-book" required>
+                                <option value="">Selecione um livro disponível</option>
+                            </select></label><button class="btn primary">Finalizar empréstimo</button></form>
+                    <p class="muted">O sistema bloqueia novos empréstimos quando o aluno possui qualquer livro pendente.
+                    </p>
+                </div>
+                <div class="panel">
+                    <div class="panel-title">
+                        <h2>Consultar situação do aluno</h2>
+                    </div>
+                    <div class="toolbar"><input id="loan-student-search"
+                            placeholder="Matrícula ou nome do aluno"><button class="btn"
+                            id="load-student-loans">Consultar histórico</button></div>
+                    <div id="loan-student-info"></div>
+                    <div id="loan-pending"></div>
+                    <div id="loan-history"></div>
+                </div>
+            </section>
+            <section id="page-reports" class="page">
+                <div class="page-heading">
+                    <div>
+                        <p class="eyebrow">ACOMPANHAMENTO</p>
+                        <h1>Relatório de devedores</h1>
+                        <p>Empréstimos ativos cuja data prevista de devolução já passou.</p>
+                    </div><button class="btn primary" id="print-report">Imprimir relatório</button>
+                </div>
+                <div id="report-content" class="table-wrap"></div>
+            </section>
+        </main>
+        <footer> S A B <span>•</span> Sistema de Acervo de Biblioteca</footer>
+    </div>
+    <dialog id="record-dialog">
+        <form id="record-form" method="dialog">
+            <div class="dialog-head">
+                <div>
+                    <p class="eyebrow" id="dialog-eyebrow">CADASTRO</p>
+                    <h2 id="dialog-title">Registro</h2>
+                </div><button type="button" class="icon-btn" id="dialog-close" aria-label="Fechar">×</button>
+            </div>
+            <div id="dialog-fields" class="form-grid"></div>
+            <div class="dialog-actions"><button type="button" class="btn danger hidden"
+                    id="delete-record">Excluir</button><span class="spacer"></span><button type="button" class="btn"
+                    id="cancel-dialog">Cancelar</button><button class="btn primary" id="save-record">Salvar</button>
+            </div>
+            <p id="form-error" class="error"></p>
+        </form>
+    </dialog>
+    <div id="toast" class="toast" role="status"></div>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="/js/app.js"></script>
+</body>
+
+</html>
