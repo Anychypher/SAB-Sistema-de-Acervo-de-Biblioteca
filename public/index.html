@@ -12,12 +12,11 @@
 <body>
     <div id="login" class="login-screen">
         <form id="login-form" class="login-card">
-            <div class="brand-mark">SAB</div>
+            <img class="brand-mark" src="/img/logo.png" alt="Logomarca SAB">
             <h1>Sistema de Acervo de Biblioteca</h1>
             <p>Colégio Estadual Humberto de A. Castelo Branco EFMT</p><label>Senha do operador<input id="password"
                     type="password" autocomplete="current-password" required autofocus></label><button
-                class="btn primary full">Entrar</button><small>Senha inicial: 1234 (altere com
-                OPERATOR_PASSWORD)</small>
+                class="btn primary full">Entrar</button><small>Configure ADMIN_RECOVERY_PASSWORD no servidor para habilitar o acesso de administraÃ§Ã£o e recuperaÃ§Ã£o.</small>
             <p id="login-error" class="error"></p>
         </form>
     </div>
@@ -27,16 +26,16 @@
                 <div class="school-name">Colégio Estadual Humberto de A. Castelo Branco EFMT</div>
                 <div class="system-name">SAB — SISTEMA DE ACERVO DE BIBLIOTECA</div>
             </div>
-            <div class="seal" aria-label="Logomarca SAB">SAB<span>📚</span></div>
+            <img class="seal" src="/img/logo.png" alt="Logomarca SAB">
         </header>
         <nav class="nav"><button data-page="home" class="active">Início</button><button
                 data-page="books">Acervo</button><button data-page="students">Cadastro de aluno</button><button
                 data-page="loans">Empréstimos</button><button data-page="reports">Relatório de devedores</button><button
-                id="logout" class="logout">Sair</button></nav>
+                id="admin-nav" data-page="admin" class="hidden">Administração</button><button id="logout" class="logout">Sair</button></nav>
         <main id="main" class="main">
             <section id="page-home" class="page active">
                 <div class="welcome">
-                    <div class="welcome-logo">📚</div>
+                    <img class="welcome-logo" src="/img/logo.png" alt="Logomarca SAB">
                     <p>Conhecer é poder</p>
                     <h1>Bem-vindo ao SAB</h1><span>Gerencie o acervo, os alunos e a circulação de livros da
                         biblioteca.</span>
@@ -143,6 +142,23 @@
                     </div><button class="btn primary" id="print-report">Imprimir relatório</button>
                 </div>
                 <div id="report-content" class="table-wrap"></div>
+            </section>
+            <section id="page-admin" class="page">
+                <div class="page-heading">
+                    <div>
+                        <p class="eyebrow">ACESSO RESTRITO</p>
+                        <h1>Administração</h1>
+                        <p>Defina uma nova senha para a conta de operador.</p>
+                    </div>
+                </div>
+                <div class="panel admin-panel">
+                    <form id="operator-password-form">
+                        <label>Nova senha do operador<input id="new-operator-password" type="password" minlength="8" maxlength="200" autocomplete="new-password" required></label>
+                        <label>Confirme a nova senha<input id="confirm-operator-password" type="password" minlength="8" maxlength="200" autocomplete="new-password" required></label>
+                        <button class="btn primary">Salvar nova senha</button>
+                        <p id="admin-message" class="muted" role="status"></p>
+                    </form>
+                </div>
             </section>
         </main>
         <footer> S A B <span>•</span> Sistema de Acervo de Biblioteca</footer>

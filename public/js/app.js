@@ -19,6 +19,7 @@
 const $ = (selector) => document.querySelector(selector);
 
 let token = sessionStorage.getItem('sab-token') || '';
+let role = sessionStorage.getItem('sab-role') || '';
 
 let editing = null;
 let recordType = null;
@@ -87,6 +88,7 @@ function login() {
 
 // Entra no sistema
 function enter() {
+    $('#admin-nav').classList.toggle('hidden', role !== 'admin');
     $('#login').classList.add('hidden');
     $('#app').classList.remove('hidden');
 
@@ -116,8 +118,10 @@ $('#login-form').addEventListener('submit', async (event) => {
         }
 
         token = data.token;
+        role = data.role;
 
         sessionStorage.setItem('sab-token', token);
+        sessionStorage.setItem('sab-role', role);
 
         $('#login-error').textContent = '';
 
@@ -134,7 +138,9 @@ if (token) {
         .then(enter)
         .catch(() => {
             sessionStorage.removeItem('sab-token');
+            sessionStorage.removeItem('sab-role');
             token = '';
+            role = '';
             login();
         });
 } else {
@@ -146,6 +152,9 @@ $('#logout').onclick = () => {
     token = '';
 
     sessionStorage.removeItem('sab-token');
+    sessionStorage.removeItem('sab-role');
+    role = '';
+    $('#admin-nav').classList.add('hidden');
 
     login();
 };
@@ -170,7 +179,30 @@ function navigate(page) {
     if (page === 'students') loadStudents();
     if (page === 'loans') loadLoanOptions();
     if (page === 'reports') loadReport();
+    if (page === 'admin' && role !== 'admin') navigate('home');
 }
+
+$('#operator-password-form').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const password = $('#new-operator-password').value;
+    const confirmation = $('#confirm-operator-password').value;
+    const message = $('#admin-message');
+    message.textContent = '';
+    if (password !== confirmation) {
+        message.textContent = 'As senhas não coincidem.';
+        return;
+    }
+    try {
+        await api('/admin/operator-password', {
+            method: 'PUT',
+            body: JSON.stringify({ password })
+        });
+        event.target.reset();
+        message.textContent = 'Senha do operador atualizada.';
+    } catch (error) {
+        message.textContent = error.message;
+    }
+});
 
 // Eventos dos botões de navegação
 document.querySelectorAll('[data-page]').forEach((button) => {

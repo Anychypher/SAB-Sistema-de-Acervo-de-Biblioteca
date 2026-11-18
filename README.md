@@ -77,6 +77,25 @@ Para desenvolvimento com reinício automático:
 npm run dev
 ```
 
+### Recuperação e alteração de senha do operador
+
+Configure `ADMIN_RECOVERY_PASSWORD` com uma senha forte que somente o administrador conheça. Essa senha também pode ser usada na tela de login; ela abre o sistema com acesso ao menu **Administração**, onde é possível escolher e salvar uma nova senha do operador. A senha do operador precisa ter pelo menos 8 caracteres.
+
+PowerShell:
+
+```powershell
+$env:ADMIN_RECOVERY_PASSWORD='crie-aqui-uma-senha-secreta-forte'
+npm start
+```
+
+Linux/macOS:
+
+```bash
+ADMIN_RECOVERY_PASSWORD='crie-aqui-uma-senha-secreta-forte' npm start
+```
+
+A senha definida pelo operador é armazenada no banco local como hash e continua válida após reiniciar o servidor. `OPERATOR_PASSWORD` serve apenas para inicializar a senha quando o banco ainda não tem uma senha gravada. Mantenha `ADMIN_RECOVERY_PASSWORD` privada e configurada sempre que iniciar o servidor; sem ela, o acesso de recuperação fica desativado.
+
 ## Importação de dados
 
 Na tela **Acervo** ou **Cadastro de aluno**, use o botão de importação. O sistema lê a primeira aba da planilha. O importador de XLSX utiliza SheetJS carregado pelo navegador via CDN; portanto, para esse formato, é necessária conexão com a internet na tela de importação. CSV é processado localmente.

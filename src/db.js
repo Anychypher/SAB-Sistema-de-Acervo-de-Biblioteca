@@ -27,6 +27,10 @@ CREATE TABLE IF NOT EXISTS loans (
  renewed_at TEXT, renewed_due_at TEXT, returned_at TEXT, status TEXT NOT NULL DEFAULT 'active',
  FOREIGN KEY(student_id) REFERENCES students(id), FOREIGN KEY(book_id) REFERENCES books(id)
 );
+CREATE TABLE IF NOT EXISTS settings (
+ key TEXT PRIMARY KEY,
+ value TEXT NOT NULL
+);
 CREATE INDEX IF NOT EXISTS idx_loans_student_status ON loans(student_id, status);
 CREATE INDEX IF NOT EXISTS idx_loans_due ON loans(due_at, status);
 `);
