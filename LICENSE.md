@@ -14,6 +14,7 @@ Os criadores identificados para este projeto são:
 - Emilly Cristina de Oliveira
 - Maria Emanuelle Moraes Ribeiro
 - Nathaly Furlaneto Sales
+- Henry Gabriel Domingos Azevedo
 
 O professor Alexandre Contreira está autorizado a acessar e usar o projeto para orientação, avaliação e apresentação acadêmica relacionadas ao TCC. Essa autorização, por si só, não o identifica como criador nem transfere a titularidade do código.
 
@@ -61,3 +62,4 @@ Para registrar a concordância de todos os criadores com os termos desta licenç
 | Emilly Cristina de Oliveira |  |  |
 | Maria Emanuelle Moraes Ribeiro |  |  |
 | Nathaly Furlaneto Sales |  |  |
+| Henry Gabriel Domingos Azevedo |  |  |

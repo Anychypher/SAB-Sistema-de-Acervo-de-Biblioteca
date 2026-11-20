@@ -491,7 +491,7 @@ $('#record-form').addEventListener('submit', async (event) => {
 
     try {
         await api(
-            recordType + (editing ? '/' + editing : ''),
+            '/' + recordType + (editing ? '/' + editing : ''),
             {
                 method: editing ? 'PUT' : 'POST',
                 body: JSON.stringify(data)
