@@ -42,18 +42,26 @@ O projeto foi implementado com a stack solicitada: HTML5, CSS3 e JavaScript puro
 
 ## Requisitos
 
-- Node.js 20 ou superior (recomendado).
+- Node.js 22 ou superior.
 - npm.
 - Windows ou Linux. O SQLite é armazenado localmente em `data/sab.sqlite`.
 
 ## Instalação e execução
 
-É necessário ter Node.js 20 ou superior e npm instalados.
+É necessário ter Node.js 22 ou superior e npm instalados.
 
 ```bash
-npm install
+npm ci
 npm start
 ```
+
+No Windows, instale as dependências com:
+
+```powershell
+npm ci --ignore-scripts
+```
+
+Esse comando evita que a instalação tente compilar o `better-sqlite3` com `node-gyp`, o que exigiria as ferramentas C++ do Visual Studio. Use-o neste projeto, que inclui o binário pré-compilado necessário. `npm ci` recria `node_modules` conforme o `package-lock.json`; `--ignore-scripts` pula scripts de instalação dos pacotes.
 
 No PowerShell, para definir a senha inicial do operador antes de iniciar:
 
