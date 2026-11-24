@@ -58,6 +58,20 @@ const esc = (value) => {
     }[char]));
 };
 
+const formatDate = (value) => {
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value || ''));
+    return match ? `${match[3]}/${match[2]}/${match[1]}` : (value || '—');
+};
+const maskPhone = (value) => {
+    const digits = String(value || '').replace(/\D/g, '').slice(0, 11);
+    if (digits.length <= 2) return digits ? `(${digits}` : '';
+    const area = digits.slice(0, 2), rest = digits.slice(2);
+    return digits.length <= 10
+        ? `(${area}) ${rest.slice(0, 4)}${rest.length > 4 ? `-${rest.slice(4)}` : ''}`
+        : `(${area}) ${rest.slice(0, 5)}${rest.length > 5 ? `-${rest.slice(5)}` : ''}`;
+};
+const phoneFields = new Set(['father_phone', 'mother_phone', 'guardian_phone']);
+
 // Exibe notificações
 const toast = (message) => {
     const element = $('#toast');
@@ -180,6 +194,10 @@ function navigate(page) {
     if (page === 'loans') loadLoanOptions();
     if (page === 'reports') loadReport();
     if (page === 'admin' && role !== 'admin') navigate('home');
+    if (page === 'admin' && role === 'admin') {
+        loadAdminLoans();
+        loadAdminAudit();
+    }
 }
 
 $('#operator-password-form').addEventListener('submit', async (event) => {
@@ -226,6 +244,61 @@ $('#download-backup').addEventListener('click', async () => {
     } catch (error) {
         message.textContent = error.message;
     }
+});
+
+async function loadAdminLoans() {
+    const table = $('#admin-loans-table');
+    try {
+        const loans = await api('/admin/loans');
+        table.innerHTML = loans.length ? `<table><thead><tr><th>Aluno</th><th>Livro</th><th>Retirada</th><th>Previsão</th><th>Situação</th><th></th></tr></thead><tbody>${loans.map((loan) => `<tr><td>${esc(loan.student_name)} (${esc(loan.enrollment)})</td><td>${esc(loan.book_title)}</td><td>${formatDate(loan.borrowed_at)}</td><td>${formatDate(loan.renewed_due_at || loan.due_at)}</td><td>${loan.status === 'active' ? 'Pendente' : 'Devolvido'}</td><td><button class="btn" data-admin-loan="${loan.id}">Ajustar</button></td></tr>`).join('')}</tbody></table>` : '<p class="muted">Ainda não há empréstimos cadastrados.</p>';
+        table.querySelectorAll('[data-admin-loan]').forEach((button) => button.onclick = () => {
+            const loan = loans.find((item) => item.id === Number(button.dataset.adminLoan));
+            const form = $('#admin-loan-form');
+            for (const key of ['id', 'borrowed_at', 'due_at', 'renewed_at', 'renewed_due_at', 'returned_at', 'status']) form.elements[key].value = loan[key] || '';
+            form.classList.remove('hidden');
+            $('#admin-loan-message').textContent = '';
+        });
+    } catch (error) { table.textContent = error.message; }
+}
+const auditLabels = {
+    borrowed_at: 'Data de retirada', due_at: 'Data prevista', renewed_at: 'Data da renovação',
+    renewed_due_at: 'Nova previsão', returned_at: 'Data de devolução', status: 'Situação'
+};
+const auditValue = (key, value) => key === 'status'
+    ? (value === 'active' ? 'Pendente' : 'Devolvido')
+    : formatDate(value);
+async function loadAdminAudit() {
+    const table = $('#admin-audit-table');
+    try {
+        const rows = await api('/admin/audit');
+        table.innerHTML = rows.length ? `<table><thead><tr><th>Quando</th><th>Admin</th><th>Empréstimo</th><th>O que foi alterado</th></tr></thead><tbody>${rows.map((row) => {
+            const when = new Date(`${row.created_at.replace(' ', 'T')}Z`).toLocaleString('pt-BR');
+            const changes = Object.entries(row.changes).map(([key, value]) => `${esc(auditLabels[key] || key)}: ${esc(auditValue(key, value.before))} → ${esc(auditValue(key, value.after))}`).join('<br>');
+            return `<tr><td>${esc(when)}</td><td>Administrador</td><td>${esc(row.student_name || 'Registro indisponível')} · ${esc(row.book_title || `Empréstimo ${row.loan_id}`)}</td><td>${changes}</td></tr>`;
+        }).join('')}</tbody></table>` : '<p class="muted">Nenhuma manipulação registrada ainda.</p>';
+    } catch (error) { table.textContent = error.message; }
+}
+$('#cancel-admin-loan').onclick = () => $('#admin-loan-form').classList.add('hidden');
+$('#admin-loan-form').elements.status.addEventListener('change', (event) => {
+    const returned = $('#admin-loan-form').elements.returned_at;
+    if (event.target.value === 'returned' && !returned.value) {
+        const now = new Date();
+        returned.value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    }
+    if (event.target.value === 'active') returned.value = '';
+});
+$('#admin-loan-form').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const form = event.currentTarget, data = Object.fromEntries(new FormData(form).entries());
+    for (const key of ['renewed_at', 'renewed_due_at', 'returned_at']) data[key] ||= null;
+    try {
+        await api(`/admin/loans/${data.id}`, { method: 'PUT', body: JSON.stringify(data) });
+        form.classList.add('hidden');
+        await loadAdminLoans();
+        await loadAdminAudit();
+        loadDashboard();
+        toast('Empréstimo atualizado.');
+    } catch (error) { $('#admin-loan-message').textContent = error.message; }
 });
 
 // Eventos dos botões de navegação
@@ -465,7 +538,7 @@ async function openStudent(id = null) {
             const field = $(`[name="${key}"]`);
 
             if (field) {
-                field.value = value;
+                field.value = phoneFields.has(key) ? maskPhone(value) : value;
             }
         });
     }
@@ -488,6 +561,7 @@ $('#record-form').addEventListener('submit', async (event) => {
     const data = Object.fromEntries(
         new FormData(event.target).entries()
     );
+    for (const key of phoneFields) data[key] = String(data[key] || '').replace(/\D/g, '');
 
     try {
         await api(
@@ -513,6 +587,11 @@ $('#record-form').addEventListener('submit', async (event) => {
     } catch (error) {
         showError($('#form-error'), error.message);
     }
+});
+
+$('#dialog-fields').addEventListener('input', (event) => {
+    if (phoneFields.has(event.target.name)) event.target.value = maskPhone(event.target.value);
+    if (event.target.name === 'enrollment') event.target.value = event.target.value.replace(/\D/g, '').slice(0, 10);
 });
 
 // Excluir livro ou aluno
@@ -561,7 +640,7 @@ async function loadStudents(query = '') {
             <tr>
                 <td>${esc(student.enrollment)}</td>
                 <td><strong>${esc(student.name)}</strong></td>
-                <td>${esc(student.birth)}</td>
+                <td>${esc(formatDate(student.birth))}</td>
                 <td>${esc(student.class_name)}</td>
                 <td>${esc(student.city)}</td>
                 <td>
@@ -789,13 +868,13 @@ async function showHistory(id) {
                                     <tr>
                                         <td>${esc(loan.code)}</td>
                                         <td>${esc(loan.title)}</td>
-                                        <td>${esc(loan.borrowed_at)}</td>
+                                        <td>${esc(formatDate(loan.borrowed_at))}</td>
                                         <td>
                                             ${esc(
-                                                loan.renewed_due_at || loan.due_at
+                                                formatDate(loan.renewed_due_at || loan.due_at)
                                             )}
                                         </td>
-                                        <td>${esc(loan.renewed_at || '—')}</td>
+                                        <td>${esc(formatDate(loan.renewed_at))}</td>
                                         <td>
                                             <span class="pill ${loan.late ? 'late' : ''}">
                                                 ${loan.late ? 'Em atraso' : 'No prazo'}
@@ -854,13 +933,13 @@ async function showHistory(id) {
                                     <tr>
                                         <td>${esc(loan.code)}</td>
                                         <td>${esc(loan.title)}</td>
-                                        <td>${esc(loan.borrowed_at)}</td>
+                                        <td>${esc(formatDate(loan.borrowed_at))}</td>
                                         <td>
                                             ${esc(
-                                                loan.renewed_due_at || loan.due_at
+                                                formatDate(loan.renewed_due_at || loan.due_at)
                                             )}
                                         </td>
-                                        <td>${esc(loan.returned_at)}</td>
+                                        <td>${esc(formatDate(loan.returned_at))}</td>
                                     </tr>
                                 `).join('')}
                             </tbody>
@@ -985,10 +1064,10 @@ async function loadReport() {
                                     ${esc(row.author)}
                                 </td>
 
-                                <td>${esc(row.borrowed_at)}</td>
-                                <td>${esc(row.due_at)}</td>
-                                <td>${esc(row.renewed_at || '—')}</td>
-                                <td>${esc(row.renewed_due_at || '—')}</td>
+                                <td>${esc(formatDate(row.borrowed_at))}</td>
+                                <td>${esc(formatDate(row.due_at))}</td>
+                                <td>${esc(formatDate(row.renewed_at))}</td>
+                                <td>${esc(formatDate(row.renewed_due_at))}</td>
                             </tr>
                         `).join('')}
                     </tbody>

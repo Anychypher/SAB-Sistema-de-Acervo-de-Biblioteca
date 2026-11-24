@@ -109,6 +109,10 @@ A senha definida pelo operador é armazenada no banco local como hash e continua
 
 Na mesma área de Administração, use **Baixar backup** para baixar uma cópia consistente do banco SQLite. Guarde o arquivo em um local seguro e separado do computador do servidor. Para restaurar, pare o servidor normalmente, preserve o banco atual e eventuais arquivos `sab.sqlite-wal` e `sab.sqlite-shm`, e então copie o backup para `data/sab.sqlite`.
 
+Na área de Administração, administradores também podem ajustar datas e situação de empréstimos para preparar demonstrações. A disponibilidade dos exemplares é atualizada junto com a situação. Datas são exibidas como `DD/MM/AAAA`; o banco continua armazenando-as como `AAAA-MM-DD`. Telefones são formatados na digitação e gravados apenas com números.
+
+A seção **Manipulação de empréstimo** mantém um registro das alterações feitas por essa ferramenta, incluindo data e hora, empréstimo e valores anteriores e novos. O histórico é acessível apenas ao admin e mostra até 200 alterações recentes.
+
 ## Importação de dados
 
 Na tela **Acervo** ou **Cadastro de aluno**, use o botão de importação. O sistema lê a primeira aba da planilha. O importador de XLSX utiliza SheetJS carregado pelo navegador via CDN; portanto, para esse formato, é necessária conexão com a internet na tela de importação. CSV é processado localmente.
@@ -164,6 +168,8 @@ Todas as rotas abaixo de `/api`, exceto `POST /api/login`, exigem o token retorn
 | POST | `/api/loans/:id/renew` | Renovar uma vez por 7 dias |
 | GET | `/api/reports/overdue` | Relatório de atrasos |
 | GET | `/api/dashboard` | Indicadores da página inicial |
+| GET/PUT | `/api/admin/loans` e `/api/admin/loans/:id` | Listar e ajustar datas/situação de empréstimos (admin) |
+| GET | `/api/admin/audit` | Consultar o histórico de manipulações (admin) |
 | POST | `/api/import/books` | Importar livros a partir de linhas JSON |
 | POST | `/api/import/students` | Importar alunos a partir de linhas JSON |
 

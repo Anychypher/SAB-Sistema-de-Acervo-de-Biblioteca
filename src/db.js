@@ -31,7 +31,16 @@ CREATE TABLE IF NOT EXISTS settings (
  key TEXT PRIMARY KEY,
  value TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS admin_audit (
+ id INTEGER PRIMARY KEY AUTOINCREMENT,
+ admin TEXT NOT NULL DEFAULT 'admin',
+ action TEXT NOT NULL,
+ loan_id INTEGER NOT NULL,
+ changes TEXT NOT NULL,
+ created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
 CREATE INDEX IF NOT EXISTS idx_loans_student_status ON loans(student_id, status);
 CREATE INDEX IF NOT EXISTS idx_loans_due ON loans(due_at, status);
+CREATE INDEX IF NOT EXISTS idx_admin_audit_created ON admin_audit(created_at DESC, id DESC);
 `);
 module.exports = db;

@@ -165,6 +165,27 @@
                     <button class="btn" id="download-backup" type="button">Baixar backup</button>
                     <p id="backup-message" class="muted" role="status"></p>
                 </div>
+                <div class="panel admin-panel">
+                    <h2>Manipulação de empréstimo</h2>
+                    <p class="muted">O admin pode ajustar datas e situação para preparar a demonstração. As alterações também atualizam os exemplares disponíveis.</p>
+                    <div class="table-wrap" id="admin-loans-table"></div>
+                    <form id="admin-loan-form" class="hidden">
+                        <input type="hidden" name="id">
+                        <label>Data de retirada<input name="borrowed_at" type="date" required></label>
+                        <label>Data prevista<input name="due_at" type="date" required></label>
+                        <label>Renovado em<input name="renewed_at" type="date"></label>
+                        <label>Nova previsão<input name="renewed_due_at" type="date"></label>
+                        <label>Devolvido em<input name="returned_at" type="date"></label>
+                        <label>Situação<select name="status"><option value="active">Pendente</option><option value="returned">Devolvido</option></select></label>
+                        <div class="dialog-actions"><button class="btn primary">Salvar ajuste</button><button class="btn" id="cancel-admin-loan" type="button">Cancelar</button></div>
+                        <p id="admin-loan-message" class="error" role="status"></p>
+                    </form>
+                </div>
+                <div class="panel admin-panel audit-panel">
+                    <h2>Registro de manipulações</h2>
+                    <p class="muted">Histórico das alterações feitas nesta área administrativa.</p>
+                    <div class="table-wrap" id="admin-audit-table"></div>
+                </div>
             </section>
         </main>
         <footer> S A B <span>•</span> Sistema de Acervo de Biblioteca</footer>

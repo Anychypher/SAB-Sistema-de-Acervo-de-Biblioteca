@@ -202,6 +202,26 @@ button {
     margin: 0;
 }
 
+.admin-panel:has(#admin-loan-form) {
+    max-width: 100%;
+}
+
+.audit-panel {
+    max-width: 100%;
+}
+
+#admin-loan-form {
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    margin-top: 18px;
+    padding-top: 18px;
+    border-top: 1px solid var(--line, #dce5df);
+}
+
+#admin-loan-form .dialog-actions,
+#admin-loan-form .error {
+    grid-column: 1 / -1;
+}
+
 .welcome h1 {
     color: var(--blue);
     margin: 12px 0 4px

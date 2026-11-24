@@ -88,6 +88,51 @@ app.get('/api/admin/backup', async (req, res) => {
     }
 });
 
+const isIsoDate = (value, optional = false) => {
+    if (optional && value === null) return true;
+    if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+    const date = new Date(`${value}T00:00:00Z`);
+    return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value;
+};
+const adminOnly = (req, res) => req.role === 'admin' ? true : (fail(res, 'Apenas a conta de administração pode ajustar os empréstimos.', 403), false);
+app.get('/api/admin/loans', (req, res) => {
+    if (!adminOnly(req, res)) return;
+    res.json(db.prepare(`SELECT l.*, s.enrollment, s.name AS student_name, b.code, b.title AS book_title
+        FROM loans l JOIN students s ON s.id=l.student_id JOIN books b ON b.id=l.book_id
+        ORDER BY l.borrowed_at DESC, l.id DESC`).all());
+});
+app.get('/api/admin/audit', (req, res) => {
+    if (!adminOnly(req, res)) return;
+    const rows = db.prepare(`SELECT a.*, s.name AS student_name, b.title AS book_title
+        FROM admin_audit a LEFT JOIN loans l ON l.id=a.loan_id
+        LEFT JOIN students s ON s.id=l.student_id LEFT JOIN books b ON b.id=l.book_id
+        ORDER BY a.created_at DESC, a.id DESC LIMIT 200`).all();
+    res.json(rows.map(row => ({ ...row, changes: JSON.parse(row.changes) })));
+});
+app.put('/api/admin/loans/:id', (req, res) => {
+    if (!adminOnly(req, res)) return;
+    const loan = db.prepare('SELECT * FROM loans WHERE id=?').get(req.params.id);
+    if (!loan) return fail(res, 'Empréstimo não encontrado.', 404);
+    const { borrowed_at, due_at, renewed_at, renewed_due_at, returned_at, status } = req.body || {};
+    if (!isIsoDate(borrowed_at) || !isIsoDate(due_at) || !isIsoDate(renewed_at, true) || !isIsoDate(renewed_due_at, true) || !isIsoDate(returned_at, true) || !['active', 'returned'].includes(status)) return fail(res, 'Informe datas válidas e uma situação permitida.');
+    if ((renewed_at === null) !== (renewed_due_at === null)) return fail(res, 'Preencha as duas datas de renovação ou deixe ambas vazias.');
+    if ((status === 'returned') !== (returned_at !== null)) return fail(res, 'Empréstimos devolvidos precisam de data de devolução; os ativos devem ficar sem ela.');
+    if (status === 'active' && db.prepare("SELECT COUNT(*) n FROM loans WHERE student_id=? AND status='active' AND id<>?").get(loan.student_id, loan.id).n) return fail(res, 'O aluno já possui outro empréstimo ativo.');
+    const next = { borrowed_at, due_at, renewed_at, renewed_due_at, returned_at, status };
+    const changes = Object.fromEntries(Object.entries(next)
+        .filter(([key, value]) => (loan[key] ?? null) !== value)
+        .map(([key, value]) => [key, { before: loan[key] ?? null, after: value }]));
+    try {
+        const tx = db.transaction(() => {
+            if (loan.status !== status) db.prepare('UPDATE books SET available=available+? WHERE id=?').run(status === 'returned' ? 1 : -1, loan.book_id);
+            db.prepare('UPDATE loans SET borrowed_at=?,due_at=?,renewed_at=?,renewed_due_at=?,returned_at=?,status=? WHERE id=?').run(borrowed_at, due_at, renewed_at, renewed_due_at, returned_at, status, loan.id);
+            if (Object.keys(changes).length) db.prepare('INSERT INTO admin_audit(admin,action,loan_id,changes) VALUES(?,?,?,?)').run('admin', 'loan.update', loan.id, JSON.stringify(changes));
+        });
+        tx();
+        res.json(db.prepare('SELECT * FROM loans WHERE id=?').get(loan.id));
+    } catch { fail(res, 'Não foi possível atualizar o empréstimo.'); }
+});
+
 // Acervo
 app.get('/api/books', (req, res) => {
     const { code, author, title, category, q } = req.query;
