@@ -88,9 +88,9 @@ Para desenvolvimento com reinício automático:
 npm run dev
 ```
 
-### Recuperação e alteração de senha do operador
+### Senhas do operador e de recuperação
 
-Configure `ADMIN_RECOVERY_PASSWORD` com uma senha forte que somente o administrador conheça. Essa senha também pode ser usada na tela de login; ela abre o sistema com acesso ao menu **Administração**, onde é possível escolher e salvar uma nova senha do operador. A senha do operador precisa ter pelo menos 8 caracteres.
+`ADMIN_RECOVERY_PASSWORD` inicializa a senha administrativa quando o banco ainda não tem uma senha de recuperação. Defina-a antes da primeira inicialização do servidor:
 
 PowerShell:
 
@@ -105,7 +105,7 @@ Linux/macOS:
 ADMIN_RECOVERY_PASSWORD='crie-aqui-uma-senha-secreta-forte' npm start
 ```
 
-A senha definida pelo operador é armazenada no banco local como hash e continua válida após reiniciar o servidor. `OPERATOR_PASSWORD` serve apenas para inicializar a senha quando o banco ainda não tem uma senha gravada. Mantenha `ADMIN_RECOVERY_PASSWORD` privada e configurada sempre que iniciar o servidor; sem ela, o acesso de recuperação fica desativado.
+As senhas do operador e de recuperação ficam armazenadas no banco local somente como hashes e continuam válidas após reiniciar o servidor. `OPERATOR_PASSWORD` e `ADMIN_RECOVERY_PASSWORD` servem apenas para inicializar as respectivas senhas quando ainda não há hashes gravados. Depois do primeiro acesso administrativo, altere a senha de recuperação pela área **Administração**, informando a senha atual e uma nova senha com pelo menos 8 caracteres. As alterações feitas pela interface passam a valer imediatamente e permanecem mesmo se as variáveis de ambiente forem removidas.
 
 Na mesma área de Administração, use **Baixar backup** para baixar uma cópia consistente do banco SQLite. Guarde o arquivo em um local seguro e separado do computador do servidor. Para restaurar, pare o servidor normalmente, preserve o banco atual e eventuais arquivos `sab.sqlite-wal` e `sab.sqlite-shm`, e então copie o backup para `data/sab.sqlite`.
 

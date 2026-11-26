@@ -222,6 +222,28 @@ $('#operator-password-form').addEventListener('submit', async (event) => {
     }
 });
 
+$('#recovery-password-form').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const password = $('#new-recovery-password').value;
+    const confirmation = $('#confirm-recovery-password').value;
+    const message = $('#recovery-password-message');
+    message.textContent = '';
+    if (password !== confirmation) {
+        message.textContent = 'As senhas não coincidem.';
+        return;
+    }
+    try {
+        await api('/admin/recovery-password', {
+            method: 'PUT',
+            body: JSON.stringify({ currentPassword: $('#current-recovery-password').value, password })
+        });
+        event.target.reset();
+        message.textContent = 'Senha de recuperação atualizada.';
+    } catch (error) {
+        message.textContent = error.message;
+    }
+});
+
 $('#download-backup').addEventListener('click', async () => {
     const message = $('#backup-message');
     message.textContent = 'Preparando backup...';

@@ -159,6 +159,17 @@
                         <p id="admin-message" class="muted" role="status"></p>
                     </form>
                 </div>
+                <div class="panel admin-panel">
+                    <h2>Senha de recuperação administrativa</h2>
+                    <p class="muted">Altere a senha usada para entrar com acesso de administração.</p>
+                    <form id="recovery-password-form">
+                        <label>Senha atual<input id="current-recovery-password" type="password" maxlength="200" autocomplete="current-password" required></label>
+                        <label>Nova senha<input id="new-recovery-password" type="password" minlength="8" maxlength="200" autocomplete="new-password" required></label>
+                        <label>Confirme a nova senha<input id="confirm-recovery-password" type="password" minlength="8" maxlength="200" autocomplete="new-password" required></label>
+                        <button class="btn primary">Salvar senha de recuperação</button>
+                        <p id="recovery-password-message" class="muted" role="status"></p>
+                    </form>
+                </div>
                 <div class="panel admin-panel backup-panel">
                     <h2>Backup do sistema</h2>
                     <p class="muted">Baixe uma cópia do banco de dados com livros, alunos, empréstimos e configurações.</p>

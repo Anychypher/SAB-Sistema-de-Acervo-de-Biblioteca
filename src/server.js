@@ -22,7 +22,6 @@ if (fsSync.existsSync(envFile)) {
 }
 const app = express();
 const PORT = Number(process.env.PORT || 8001);
-const ADMIN_RECOVERY_PASSWORD = process.env.ADMIN_RECOVERY_PASSWORD || '';
 const hashPassword = (password, salt = crypto.randomBytes(16).toString('hex')) => `${salt}:${crypto.scryptSync(password, salt, 64).toString('hex')}`;
 const passwordMatches = (password, storedHash) => {
     if (!storedHash) return false;
@@ -32,13 +31,11 @@ const passwordMatches = (password, storedHash) => {
     const actual = crypto.scryptSync(password, salt, expected.length);
     return expected.length === actual.length && crypto.timingSafeEqual(expected, actual);
 };
-const recoveryPasswordMatches = (password) => {
-    const provided = crypto.createHash('sha256').update(password).digest();
-    const configured = crypto.createHash('sha256').update(ADMIN_RECOVERY_PASSWORD).digest();
-    return Boolean(ADMIN_RECOVERY_PASSWORD) && crypto.timingSafeEqual(provided, configured);
-};
 if (!db.prepare("SELECT value FROM settings WHERE key='operator_password_hash'").get()) {
     db.prepare('INSERT INTO settings(key,value) VALUES(?,?)').run('operator_password_hash', hashPassword(process.env.OPERATOR_PASSWORD || '1234'));
+}
+if (!db.prepare("SELECT value FROM settings WHERE key='admin_recovery_password_hash'").get() && process.env.ADMIN_RECOVERY_PASSWORD) {
+    db.prepare('INSERT INTO settings(key,value) VALUES(?,?)').run('admin_recovery_password_hash', hashPassword(process.env.ADMIN_RECOVERY_PASSWORD));
 }
 const sessions = new Map();
 const sessionRoles = new Map();
@@ -58,7 +55,8 @@ const auth = (req, res, next) => {
 app.post('/api/login', (req, res) => {
     const password = String(req.body?.password || '');
     const operatorHash = db.prepare("SELECT value FROM settings WHERE key='operator_password_hash'").get().value;
-    const role = recoveryPasswordMatches(password) ? 'admin' : passwordMatches(password, operatorHash) ? 'operator' : '';
+    const recoveryHash = db.prepare("SELECT value FROM settings WHERE key='admin_recovery_password_hash'").get()?.value;
+    const role = passwordMatches(password, recoveryHash) ? 'admin' : passwordMatches(password, operatorHash) ? 'operator' : '';
     if (!role) return fail(res, 'Senha incorreta.', 401);
     const token = crypto.randomBytes(32).toString('hex'); sessions.set(token, Date.now() + 8 * 60 * 60 * 1000); sessionRoles.set(token, role);
     res.json({ token, role, expiresIn: 28800 });
@@ -69,6 +67,16 @@ app.put('/api/admin/operator-password', (req, res) => {
     const password = String(req.body?.password || '');
     if (password.length < 8 || password.length > 200) return fail(res, 'A senha deve ter entre 8 e 200 caracteres.');
     db.prepare("UPDATE settings SET value=? WHERE key='operator_password_hash'").run(hashPassword(password));
+    res.json({ ok: true });
+});
+app.put('/api/admin/recovery-password', (req, res) => {
+    if (req.role !== 'admin') return fail(res, 'Apenas a conta de administração pode alterar a senha de recuperação.', 403);
+    const currentPassword = String(req.body?.currentPassword || '');
+    const password = String(req.body?.password || '');
+    if (password.length < 8 || password.length > 200) return fail(res, 'A senha deve ter entre 8 e 200 caracteres.');
+    const stored = db.prepare("SELECT value FROM settings WHERE key='admin_recovery_password_hash'").get()?.value;
+    if (!passwordMatches(currentPassword, stored)) return fail(res, 'Senha atual incorreta.', 401);
+    db.prepare("UPDATE settings SET value=? WHERE key='admin_recovery_password_hash'").run(hashPassword(password));
     res.json({ ok: true });
 });
 app.get('/api/admin/backup', async (req, res) => {
