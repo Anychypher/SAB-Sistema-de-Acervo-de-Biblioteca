@@ -1,11 +1,15 @@
-const Database = require('better-sqlite3');
-const path = require('path');
-const fs = require('fs');
-const dir = path.join(__dirname, '..', 'data');
+const Database = require("better-sqlite3");
+const path = require("path");
+const fs = require("fs");
+
+// Cria a pasta de dados e abre o banco local usado pelo sistema.
+const dir = path.join(__dirname, "..", "data");
 fs.mkdirSync(dir, { recursive: true });
-const db = new Database(path.join(dir, 'sab.sqlite'));
-db.pragma('journal_mode = WAL');
-db.pragma('foreign_keys = ON');
+const db = new Database(path.join(dir, "sab.sqlite"));
+db.pragma("journal_mode = WAL");
+db.pragma("foreign_keys = ON");
+
+// Cria as tabelas e os índices necessários para o funcionamento do sistema.
 db.exec(`
 CREATE TABLE IF NOT EXISTS books (
  id INTEGER PRIMARY KEY AUTOINCREMENT, code TEXT NOT NULL UNIQUE, author TEXT NOT NULL, title TEXT NOT NULL,
