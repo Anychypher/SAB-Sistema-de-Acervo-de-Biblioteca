@@ -129,9 +129,9 @@ Cabeçalhos recomendados para livros:
 | Categoria | `category` ou `CATEGORIA` |
 | Volumes existentes | `total` ou `VOLUMES EXISTENTES` |
 
-Cabeçalhos recomendados para alunos: `enrollment` ou `MATRÍCULA`, `name` ou `NOME`, `birth` ou `NASCIMENTO`, `class_name` ou `TURMA`.
+Cabeçalhos recomendados para alunos: `enrollment`, `name`, `birth`, `class_name`, `street`, `number`, `complement`, `neighborhood`, `city`, `father`, `father_phone`, `mother`, `mother_phone`, `guardian` e `guardian_phone`. Também são aceitos `MATRÍCULA`/`matricula`, `NOME`, `NASCIMENTO` e `TURMA`; para os demais campos, use os nomes em inglês indicados acima.
 
-Registros com campos obrigatórios ausentes, matrícula/código duplicado ou quantidades inválidas são ignorados e contabilizados no resultado. A importação não substitui registros existentes.
+Registros com campos obrigatórios ausentes, matrícula/código duplicado ou quantidades inválidas são ignorados e contabilizados no resultado. Para alunos, uma matrícula já existente é atualizada apenas nos campos que estiverem vazios, permitindo completar cadastros sem sobrescrever dados já preenchidos. Para livros, registros existentes não são substituídos.
 
 ## Estrutura do projeto
 

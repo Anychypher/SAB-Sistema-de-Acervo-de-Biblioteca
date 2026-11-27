@@ -687,14 +687,43 @@ app.post("/api/import/:type", (req, res) => {
           const name = r.name ?? r["NOME"];
           if (!/^\d{1,10}$/.test(String(enrollment || "")) || !name)
             throw Error();
+          const keys = [
+            "enrollment",
+            "name",
+            "birth",
+            "class_name",
+            "street",
+            "number",
+            "complement",
+            "neighborhood",
+            "city",
+            "father",
+            "father_phone",
+            "mother",
+            "mother_phone",
+            "guardian",
+            "guardian_phone",
+          ];
+          const values = keys.map((key) => {
+            const value = String(
+              key === "enrollment"
+                ? enrollment
+                : key === "name"
+                  ? name
+                  : r[key] ?? "",
+            ).trim();
+            return key.endsWith("_phone") ? value.replace(/\D/g, "") : value;
+          });
           db.prepare(
-            "INSERT INTO students(enrollment,name,birth,class_name) VALUES(?,?,?,?)",
-          ).run(
-            String(enrollment),
-            String(name),
-            r.birth ?? r["NASCIMENTO"] ?? "",
-            r.class_name ?? r["TURMA"] ?? "",
-          );
+            `INSERT INTO students(${keys.join(",")}) VALUES(${keys.map(() => "?").join(",")})
+             ON CONFLICT(enrollment) DO UPDATE SET ${keys
+               .filter((key) => key !== "enrollment")
+               .map(
+                 (key) =>
+                   `${key}=CASE WHEN students.${key}='' THEN excluded.${key} ELSE students.${key} END`,
+               )
+               .join(",")}`,
+          ).run(...values);
         }
         imported++;
       } catch {
